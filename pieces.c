@@ -28,7 +28,10 @@ bool pawn_can_move(board_t *board, square_t *start, square_t *end,
 }
 
 bool knight_can_move(square_t *start, square_t *end) {
-  return abs(end->rank - start->rank) + abs(end->file - start->file) == 3;
+  return (abs(end->rank - start->rank) == 1 &&
+          abs(end->file - start->file) == 2) ||
+         (abs(end->rank - start->rank) == 2 &&
+          abs(end->file - start->file) == 1);
 }
 
 bool bishop_can_move(board_t *board, square_t *start, square_t *end) {
@@ -125,7 +128,7 @@ bool move_piece(board_t *board, piece_t *piece, square_t *square) {
     if (square->piece->color == piece->color) {
       return false;
     }
-    free(square->piece);
+    // free(square->piece);
   }
   piece->square->piece = NULL;
   piece->has_moved = true;
