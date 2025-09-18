@@ -140,6 +140,7 @@ bool is_valid_san(const char *move) {
 bool move_from_san(board_t *board, char *move, bool white_to_move) {
   piece_type_t piece_type;
   int piece_file = -1, piece_rank = -1, dest_file = -1, dest_rank = -1;
+  piece_type_t promotion_type = QUEEN;
   int i = 0;
 
   switch (move[i]) {
@@ -193,6 +194,27 @@ bool move_from_san(board_t *board, char *move, bool white_to_move) {
     return false;
   }
 
+  if (move[i] == '=') {
+    switch (move[i + 1]) {
+    case 'Q':
+      promotion_type = QUEEN;
+      break;
+    case 'R':
+      promotion_type = ROOK;
+      break;
+    case 'N':
+      promotion_type = KNIGHT;
+      break;
+    case 'B':
+      promotion_type = BISHOP;
+      break;
+    default:
+      return false;
+    }
+
+    i += 2;
+  }
+
   square_t *dest_square = &board->squares[dest_rank][dest_file];
 
   piece_t *final_piece = NULL;
@@ -221,7 +243,7 @@ bool move_from_san(board_t *board, char *move, bool white_to_move) {
     return false;
   }
 
-  return move_piece(board, final_piece, dest_square);
+  return move_piece(board, final_piece, dest_square, promotion_type);
 }
 
 int main(void) {

@@ -115,7 +115,8 @@ bool can_move(board_t *board, piece_t *piece, square_t *square) {
   }
 }
 
-bool move_piece(board_t *board, piece_t *piece, square_t *square) {
+bool move_piece(board_t *board, piece_t *piece, square_t *square,
+                piece_type_t promotion_type) {
   if (piece == NULL || square == NULL) {
     return false;
   }
@@ -128,8 +129,14 @@ bool move_piece(board_t *board, piece_t *piece, square_t *square) {
     if (square->piece->color == piece->color) {
       return false;
     }
-    // free(square->piece);
+    free(square->piece);
   }
+
+  if (piece->type == PAWN && ((piece->color == WHITE && square->rank == 7) ||
+                              (piece->color == BLACK && square->rank == 0))) {
+    piece->type = promotion_type;
+  }
+
   piece->square->piece = NULL;
   piece->has_moved = true;
   square->piece = piece;

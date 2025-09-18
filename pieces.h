@@ -26,4 +26,5 @@ typedef struct Board {
 } board_t;
 
 bool can_move(board_t *board, piece_t *piece, square_t *square);
-bool move_piece(board_t *board, piece_t *piece, square_t *square);
+bool move_piece(board_t *board, piece_t *piece, square_t *square,
+                piece_type_t promotion_type);
