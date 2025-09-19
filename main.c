@@ -1,4 +1,6 @@
-#include "pieces.h"
+#include "legal_moves.h"
+#include "move_piece.h"
+#include "types.h"
 #include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -6,7 +8,7 @@
 #include <string.h>
 
 board_t *create_initial_board() {
-  board_t *board = malloc(sizeof(board_t));
+  board_t *board = calloc(1, sizeof(board_t));
 
   if (!board) {
     return NULL;
@@ -142,131 +144,74 @@ bool is_valid_san(const char *move) {
   return status == 0;
 }
 
-bool move_from_san(board_t *board, char *move, bool white_to_move) {
-  if (strcmp(move, "O-O") == 0) {
-    return castle(board, SHORT, white_to_move);
-  }
-
-  if (strcmp(move, "O-O-O") == 0) {
-    return castle(board, LONG, white_to_move);
-  }
-
-  piece_type_t piece_type;
-  int piece_file = -1, piece_rank = -1, dest_file = -1, dest_rank = -1;
-  piece_type_t promotion_type = QUEEN;
-  int i = 0;
-
-  switch (move[i]) {
-  case 'N':
-    piece_type = KNIGHT;
-    i++;
-    break;
-  case 'B':
-    piece_type = BISHOP;
-    i++;
-    break;
-  case 'R':
-    piece_type = ROOK;
-    i++;
-    break;
-  case 'Q':
-    piece_type = QUEEN;
-    i++;
-    break;
-  case 'K':
-    piece_type = KING;
-    i++;
-    break;
-  default:
-    piece_type = PAWN;
-    break;
-  }
-
-  if (move[i] >= 'a' && move[i] <= 'h' &&
-      !(move[i + 1] >= '1' && move[i + 1] <= '8')) {
-    piece_file = move[i] - 'a';
-    i++;
-  }
-
-  if (move[i] >= '1' && move[i] <= '8' &&
-      !(move[i + 1] >= 'a' && move[i + 1] <= 'h')) {
-    piece_rank = move[i] - '1';
-    i++;
-  }
-
-  if (move[i] == 'x') {
-    i++;
-  }
-
-  if (move[i] >= 'a' && move[i] <= 'h' && move[i + 1] >= '1' &&
-      move[i + 1] <= '8') {
-    dest_file = move[i] - 'a';
-    dest_rank = move[i + 1] - '1';
-    i += 2;
-  } else {
-    return false;
-  }
-
-  if (move[i] == '=') {
-    switch (move[i + 1]) {
-    case 'Q':
-      promotion_type = QUEEN;
-      break;
-    case 'R':
-      promotion_type = ROOK;
-      break;
-    case 'N':
-      promotion_type = KNIGHT;
-      break;
-    case 'B':
-      promotion_type = BISHOP;
-      break;
-    default:
-      return false;
-    }
-
-    i += 2;
-  }
-
-  square_t *dest_square = &board->squares[dest_rank][dest_file];
-
-  piece_t *final_piece = NULL;
-
+void free_board(board_t *board) {
   for (int i = 0; i < 8; ++i) {
     for (int j = 0; j < 8; ++j) {
       piece_t *piece = board->squares[i][j].piece;
-
-      if (piece == NULL || piece->type != piece_type ||
-          (piece->color == WHITE) != white_to_move ||
-          (piece_rank != -1 && piece->square->rank != piece_rank) ||
-          (piece_file != -1 && piece->square->file != piece_file)) {
-        continue;
-      }
-
-      if (can_move(board, piece, dest_square)) {
-        if (final_piece != NULL) {
-          return false;
-        }
-        final_piece = piece;
+      if (piece != NULL) {
+        free(piece);
       }
     }
   }
 
-  if (final_piece == NULL) {
-    return false;
+  free(board);
+}
+
+void game_over(game_over_type_t type, piece_color_t color) {
+  switch (type) {
+  case CHECKMATE:
+    printf("CHECKMATE! %s WINS!", color == WHITE ? "WHITE" : "BLACK");
+    break;
+  case RESIGNATION:
+    printf("%s RESIGNED! %s WINS!", color == WHITE ? "BLACK" : "WHITE",
+           color == WHITE ? "WHITE" : "BLACK");
+    break;
+  case STALEMATE:
+    printf("STALEMATE! THE GAME IS DRAWN!");
+    break;
   }
 
-  return move_piece(board, final_piece, dest_square, promotion_type);
+  printf("\n");
+
+  while (true) {
+    char choice;
+    printf("Do you want to play again? (y/n): ");
+    scanf(" %c", &choice);
+    if (choice == 'y') {
+      break;
+    } else if (choice == 'n') {
+      exit(0);
+    }
+  }
 }
 
 int main(void) {
   board_t *board = create_initial_board();
   bool white_to_move = true;
+
+game_loop:
   while (true) {
     print_board(board);
-    printf("Enter a move for %s: ", white_to_move ? "white" : "black");
+
+    bool in_check = is_in_check(board, white_to_move ? WHITE : BLACK);
+
+    if (!has_legal_move(board, white_to_move ? WHITE : BLACK)) {
+      game_over(in_check ? CHECKMATE : STALEMATE,
+                white_to_move ? BLACK : WHITE);
+      break;
+    } else if (in_check) {
+      printf("Check!\n");
+    }
+
+    printf("Enter a move for %s (r to resign): ",
+           white_to_move ? "white" : "black");
     char move[10];
     scanf("%9s", move);
+
+    if (strcmp(move, "r") == 0) {
+      game_over(RESIGNATION, white_to_move ? BLACK : WHITE);
+      break;
+    }
 
     if (!is_valid_san(move)) {
       continue;
@@ -277,5 +222,8 @@ int main(void) {
     }
   }
 
-  return 0;
+  free_board(board);
+  board = create_initial_board();
+  white_to_move = true;
+  goto game_loop;
 }

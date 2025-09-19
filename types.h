@@ -8,6 +8,12 @@ typedef enum CastleType { SHORT, LONG } castle_type_t;
 
 typedef enum PieceColor { WHITE, BLACK } piece_color_t;
 
+typedef enum GameOverType {
+  CHECKMATE,
+  RESIGNATION,
+  STALEMATE
+} game_over_type_t;
+
 typedef struct Square square_t;
 
 typedef struct Piece {
@@ -29,8 +35,3 @@ typedef struct Board {
   piece_t *black_king;
   piece_t *enpassantable_pawn;
 } board_t;
-
-bool can_move(board_t *board, piece_t *piece, square_t *square);
-bool castle(board_t *board, castle_type_t type, bool white_to_move);
-bool move_piece(board_t *board, piece_t *piece, square_t *square,
-                piece_type_t promotion_type);
