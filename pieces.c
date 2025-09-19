@@ -6,25 +6,30 @@
 
 bool pawn_can_move(board_t *board, square_t *start, square_t *end,
                    int direction, bool has_moved) {
+  int diff = end->rank - start->rank;
+
   if (end->piece != NULL) {
-    return end->rank - start->rank == direction &&
-           abs(end->file - start->file) == 1;
+    return diff == direction && abs(end->file - start->file) == 1;
   }
 
-  if (end->file != start->file) {
+  if (board->enpassantable_pawn != NULL &&
+      board->enpassantable_pawn->square->rank == end->rank - direction &&
+      board->enpassantable_pawn->square->file == end->file) {
+    return diff == direction && abs(end->file - start->file) == 1;
+  }
+
+  if (end->file != start->file)
     return false;
-  }
 
-  if (board->squares[start->rank + direction][start->file].piece != NULL) {
+  if (board->squares[start->rank + direction][start->file].piece != NULL)
     return false;
+
+  if (diff == 2 * direction && !has_moved) {
+    return board->squares[start->rank + 2 * direction][start->file].piece ==
+           NULL;
   }
 
-  if (end->rank - start->rank != direction &&
-      !(end->rank - start->rank == 2 * direction && !has_moved)) {
-    return false;
-  }
-
-  return true;
+  return diff == direction;
 }
 
 bool knight_can_move(square_t *start, square_t *end) {
@@ -167,6 +172,25 @@ bool move_piece(board_t *board, piece_t *piece, square_t *square,
 
   if (!can_move(board, piece, square)) {
     return false;
+  }
+
+  if (piece->type == PAWN && board->enpassantable_pawn != NULL &&
+      board->enpassantable_pawn->square->rank ==
+          square->rank - (piece->color == WHITE ? 1 : -1) &&
+      board->enpassantable_pawn->square->file == square->file) {
+    move_to(piece, square);
+    board->enpassantable_pawn->square->piece = NULL;
+    free(board->enpassantable_pawn);
+    board->enpassantable_pawn = NULL;
+    return true;
+  }
+
+  if (piece->type == PAWN && !piece->has_moved && piece->color == WHITE
+          ? square->rank == 3
+          : square->rank == 4) {
+    board->enpassantable_pawn = piece;
+  } else {
+    board->enpassantable_pawn = NULL;
   }
 
   if (square->piece != NULL) {

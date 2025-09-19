@@ -25,6 +25,7 @@ typedef struct Square {
 
 typedef struct Board {
   square_t squares[8][8];
+  piece_t *enpassantable_pawn;
 } board_t;
 
 bool can_move(board_t *board, piece_t *piece, square_t *square);
