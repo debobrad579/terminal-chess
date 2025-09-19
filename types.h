@@ -4,15 +4,18 @@
 
 typedef enum PieceType { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING } piece_type_t;
 
-typedef enum CastleType { SHORT, LONG } castle_type_t;
+typedef enum Castle { SHORT, LONG } castle_t;
 
 typedef enum PieceColor { WHITE, BLACK } piece_color_t;
 
-typedef enum GameOverType {
+typedef enum DrawOffer { WHITE_OFFERED, BLACK_OFFERED, NO_OFFER } draw_offer_t;
+
+typedef enum GameOver {
   CHECKMATE,
   RESIGNATION,
-  STALEMATE
-} game_over_type_t;
+  STALEMATE,
+  DRAW_OFFER
+} gameover_t;
 
 typedef struct Square square_t;
 
@@ -34,4 +37,5 @@ typedef struct Board {
   piece_t *white_king;
   piece_t *black_king;
   piece_t *enpassantable_pawn;
+  draw_offer_t draw_offer;
 } board_t;

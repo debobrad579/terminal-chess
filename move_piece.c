@@ -12,8 +12,8 @@ void move_to(piece_t *piece, square_t *square) {
   piece->square = square;
 }
 
-bool castle(board_t *board, castle_type_t type, bool white_to_move) {
-  int rank = white_to_move ? 0 : 7;
+bool castle(board_t *board, castle_t type, piece_color_t color) {
+  int rank = color == WHITE ? 0 : 7;
 
   piece_t *king = board->squares[rank][4].piece;
 
@@ -21,7 +21,7 @@ bool castle(board_t *board, castle_type_t type, bool white_to_move) {
     return false;
   }
 
-  piece_color_t attacker = white_to_move ? BLACK : WHITE;
+  piece_color_t attacker = color == WHITE ? BLACK : WHITE;
 
   if (type == SHORT) {
     piece_t *rook = board->squares[rank][7].piece;
@@ -104,13 +104,13 @@ bool move_piece(board_t *board, piece_t *piece, square_t *square,
   return true;
 }
 
-bool move_from_san(board_t *board, char *move, bool white_to_move) {
+bool move_from_san(board_t *board, char *move, piece_color_t color) {
   if (strcmp(move, "O-O") == 0) {
-    return castle(board, SHORT, white_to_move);
+    return castle(board, SHORT, color);
   }
 
   if (strcmp(move, "O-O-O") == 0) {
-    return castle(board, LONG, white_to_move);
+    return castle(board, LONG, color);
   }
 
   piece_type_t piece_type;
@@ -199,7 +199,7 @@ bool move_from_san(board_t *board, char *move, bool white_to_move) {
       piece_t *piece = board->squares[i][j].piece;
 
       if (piece == NULL || piece->type != piece_type ||
-          (piece->color == WHITE) != white_to_move ||
+          (piece->color == WHITE) != color == WHITE ||
           (piece_rank != -1 && piece->square->rank != piece_rank) ||
           (piece_file != -1 && piece->square->file != piece_file)) {
         continue;

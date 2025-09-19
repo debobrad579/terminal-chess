@@ -14,6 +14,8 @@ board_t *create_initial_board() {
     return NULL;
   }
 
+  board->draw_offer = NO_OFFER;
+
   for (int i = 0; i < 8; ++i) {
     for (int j = 0; j < 8; ++j) {
       board->squares[i][j].rank = i;
@@ -157,7 +159,7 @@ void free_board(board_t *board) {
   free(board);
 }
 
-void game_over(game_over_type_t type, piece_color_t color) {
+void game_over(gameover_t type, piece_color_t color) {
   switch (type) {
   case CHECKMATE:
     printf("CHECKMATE! %s WINS!", color == WHITE ? "WHITE" : "BLACK");
@@ -168,6 +170,9 @@ void game_over(game_over_type_t type, piece_color_t color) {
     break;
   case STALEMATE:
     printf("STALEMATE! THE GAME IS DRAWN!");
+    break;
+  case DRAW_OFFER:
+    printf("DRAW AGREED! THE GAME IS DRAWN!");
     break;
   }
 
@@ -187,43 +192,66 @@ void game_over(game_over_type_t type, piece_color_t color) {
 
 int main(void) {
   board_t *board = create_initial_board();
-  bool white_to_move = true;
+  piece_color_t color_to_move = WHITE;
 
 game_loop:
   while (true) {
     print_board(board);
 
-    bool in_check = is_in_check(board, white_to_move ? WHITE : BLACK);
+    bool in_check = is_in_check(board, color_to_move);
+    piece_color_t opposite_color = color_to_move == WHITE ? BLACK : WHITE;
 
-    if (!has_legal_move(board, white_to_move ? WHITE : BLACK)) {
-      game_over(in_check ? CHECKMATE : STALEMATE,
-                white_to_move ? BLACK : WHITE);
+    if (!has_legal_move(board, color_to_move)) {
+      game_over(in_check ? CHECKMATE : STALEMATE, opposite_color);
       break;
     } else if (in_check) {
       printf("Check!\n");
     }
 
-    printf("Enter a move for %s (r to resign): ",
-           white_to_move ? "white" : "black");
+    bool have_active_draw_offer =
+        (color_to_move == WHITE && board->draw_offer == WHITE_OFFERED) ||
+        (color_to_move == BLACK && board->draw_offer == BLACK_OFFERED);
+
+    printf("Enter a move for %s (r to resign, d to %s): ",
+           color_to_move == WHITE ? "white" : "black",
+           board->draw_offer == NO_OFFER ? "offer a draw"
+           : have_active_draw_offer      ? "cancel draw offer"
+                                         : "accept draw offer");
     char move[10];
     scanf("%9s", move);
 
     if (strcmp(move, "r") == 0) {
-      game_over(RESIGNATION, white_to_move ? BLACK : WHITE);
+      game_over(RESIGNATION, opposite_color);
       break;
+    }
+
+    if (strcmp(move, "d") == 0) {
+      if (board->draw_offer == NO_OFFER) {
+        board->draw_offer =
+            color_to_move == WHITE ? WHITE_OFFERED : BLACK_OFFERED;
+      } else if (have_active_draw_offer) {
+        board->draw_offer = NO_OFFER;
+      } else {
+        game_over(DRAW_OFFER, opposite_color);
+        break;
+      }
+      continue;
     }
 
     if (!is_valid_san(move)) {
       continue;
     }
 
-    if (move_from_san(board, move, white_to_move)) {
-      white_to_move = !white_to_move;
+    if (move_from_san(board, move, color_to_move)) {
+      color_to_move = opposite_color;
+      if (board->draw_offer != NO_OFFER && !have_active_draw_offer) {
+        board->draw_offer = NO_OFFER;
+      }
     }
   }
 
   free_board(board);
   board = create_initial_board();
-  white_to_move = true;
+  color_to_move = WHITE;
   goto game_loop;
 }
