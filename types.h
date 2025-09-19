@@ -1,6 +1,6 @@
-#pragma once
-
 #include <stdbool.h>
+
+#pragma once
 
 typedef enum PieceType { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING } piece_type_t;
 
@@ -37,5 +37,4 @@ typedef struct Board {
   piece_t *white_king;
   piece_t *black_king;
   piece_t *enpassantable_pawn;
-  draw_offer_t draw_offer;
 } board_t;
