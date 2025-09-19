@@ -44,7 +44,6 @@ bool bishop_can_move(board_t *board, square_t *start, square_t *end) {
   int file_diff = end->file - start->file;
 
   if (abs(rank_diff) == abs(file_diff)) {
-    int direction = rank_diff == file_diff ? 1 : -1;
     for (int i = 1; i < abs(rank_diff); ++i) {
       if (board
               ->squares[start->rank + i * sign(rank_diff)]
@@ -130,5 +129,8 @@ bool can_move(board_t *board, piece_t *piece, square_t *square) {
     break;
   case KING:
     return king_can_move(piece->square, square);
+    break;
   }
+
+  return false;
 }

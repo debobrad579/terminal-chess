@@ -199,7 +199,7 @@ bool move_from_san(board_t *board, char *move, piece_color_t color) {
       piece_t *piece = board->squares[i][j].piece;
 
       if (piece == NULL || piece->type != piece_type ||
-          (piece->color == WHITE) != color == WHITE ||
+          (piece->color == WHITE) != (color == WHITE) ||
           (piece_rank != -1 && piece->square->rank != piece_rank) ||
           (piece_file != -1 && piece->square->file != piece_file)) {
         continue;
