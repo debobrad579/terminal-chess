@@ -115,6 +115,50 @@ bool can_move(board_t *board, piece_t *piece, square_t *square) {
   }
 }
 
+void move_to(piece_t *piece, square_t *square) {
+  piece->square->piece = NULL;
+  piece->has_moved = true;
+  square->piece = piece;
+  piece->square = square;
+}
+
+bool castle(board_t *board, castle_type_t type, bool white_to_move) {
+  int rank = white_to_move ? 0 : 7;
+
+  piece_t *king = board->squares[rank][4].piece;
+
+  if (king == NULL || king->has_moved) {
+    return false;
+  }
+
+  if (type == SHORT) {
+    piece_t *rook = board->squares[rank][7].piece;
+
+    if (board->squares[rank][6].piece != NULL ||
+        board->squares[rank][5].piece != NULL || rook == NULL ||
+        rook->has_moved) {
+      return false;
+    }
+
+    move_to(king, &board->squares[rank][6]);
+    move_to(rook, &board->squares[rank][5]);
+    return true;
+  }
+
+  piece_t *rook = board->squares[rank][0].piece;
+
+  if (board->squares[rank][1].piece != NULL ||
+      board->squares[rank][2].piece != NULL ||
+      board->squares[rank][3].piece != NULL || rook == NULL ||
+      rook->has_moved) {
+    return false;
+  }
+
+  move_to(king, &board->squares[rank][2]);
+  move_to(rook, &board->squares[rank][3]);
+  return true;
+}
+
 bool move_piece(board_t *board, piece_t *piece, square_t *square,
                 piece_type_t promotion_type) {
   if (piece == NULL || square == NULL) {
@@ -137,9 +181,6 @@ bool move_piece(board_t *board, piece_t *piece, square_t *square,
     piece->type = promotion_type;
   }
 
-  piece->square->piece = NULL;
-  piece->has_moved = true;
-  square->piece = piece;
-  piece->square = square;
+  move_to(piece, square);
   return true;
 }

@@ -138,6 +138,14 @@ bool is_valid_san(const char *move) {
 }
 
 bool move_from_san(board_t *board, char *move, bool white_to_move) {
+  if (strcmp(move, "O-O") == 0) {
+    return castle(board, SHORT, white_to_move);
+  }
+
+  if (strcmp(move, "O-O-O") == 0) {
+    return castle(board, LONG, white_to_move);
+  }
+
   piece_type_t piece_type;
   int piece_file = -1, piece_rank = -1, dest_file = -1, dest_rank = -1;
   piece_type_t promotion_type = QUEEN;

@@ -4,6 +4,8 @@
 
 typedef enum PieceType { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING } piece_type_t;
 
+typedef enum CastleType { SHORT, LONG } castle_type_t;
+
 typedef enum PieceColor { WHITE, BLACK } piece_color_t;
 
 typedef struct Square square_t;
@@ -26,5 +28,6 @@ typedef struct Board {
 } board_t;
 
 bool can_move(board_t *board, piece_t *piece, square_t *square);
+bool castle(board_t *board, castle_type_t type, bool white_to_move);
 bool move_piece(board_t *board, piece_t *piece, square_t *square,
                 piece_type_t promotion_type);
