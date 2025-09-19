@@ -120,6 +120,28 @@ bool can_move(board_t *board, piece_t *piece, square_t *square) {
   }
 }
 
+bool square_attacked(board_t *board, square_t *square, piece_color_t color) {
+  for (int i = 0; i < 8; ++i) {
+    for (int j = 0; j < 8; ++j) {
+      piece_t *piece = board->squares[i][j].piece;
+
+      if (piece == NULL) {
+        continue;
+      }
+
+      if (piece->color != color) {
+        continue;
+      }
+
+      if (can_move(board, piece, square)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 void move_to(piece_t *piece, square_t *square) {
   piece->square->piece = NULL;
   piece->has_moved = true;
@@ -145,6 +167,12 @@ bool castle(board_t *board, castle_type_t type, bool white_to_move) {
       return false;
     }
 
+    if (square_attacked(board, &board->squares[rank][6], BLACK) ||
+        square_attacked(board, &board->squares[rank][5],
+                        white_to_move ? BLACK : WHITE)) {
+      return false;
+    }
+
     move_to(king, &board->squares[rank][6]);
     move_to(rook, &board->squares[rank][5]);
     return true;
@@ -156,6 +184,12 @@ bool castle(board_t *board, castle_type_t type, bool white_to_move) {
       board->squares[rank][2].piece != NULL ||
       board->squares[rank][3].piece != NULL || rook == NULL ||
       rook->has_moved) {
+    return false;
+  }
+
+  if (square_attacked(board, &board->squares[rank][2], BLACK) ||
+      square_attacked(board, &board->squares[rank][3],
+                      white_to_move ? BLACK : WHITE)) {
     return false;
   }
 
@@ -193,6 +227,28 @@ bool move_piece(board_t *board, piece_t *piece, square_t *square,
     board->enpassantable_pawn = NULL;
   }
 
+  piece->square->piece = NULL;
+  bool prev_has_moved = piece->has_moved;
+  piece->has_moved = true;
+  piece_t *prev_piece = square->piece;
+  square->piece = piece;
+  square_t *prev_square = piece->square;
+  piece->square = square;
+
+  bool in_check = (piece->color == WHITE &&
+                   square_attacked(board, board->white_king->square, BLACK)) ||
+                  (piece->color == BLACK &&
+                   square_attacked(board, board->black_king->square, WHITE));
+
+  piece->square = prev_square;
+  square->piece = prev_piece;
+  piece->has_moved = prev_has_moved;
+  piece->square->piece = piece;
+
+  if (in_check) {
+    return false;
+  }
+
   if (square->piece != NULL) {
     if (square->piece->color == piece->color) {
       return false;
@@ -206,5 +262,6 @@ bool move_piece(board_t *board, piece_t *piece, square_t *square,
   }
 
   move_to(piece, square);
+
   return true;
 }

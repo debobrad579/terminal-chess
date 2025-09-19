@@ -58,6 +58,11 @@ board_t *create_initial_board() {
           break;
         case 4:
           piece->type = KING;
+          if (piece->color == WHITE) {
+            board->white_king = piece;
+          } else {
+            board->black_king = piece;
+          }
           break;
         }
       } else {

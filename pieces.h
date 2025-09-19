@@ -25,6 +25,8 @@ typedef struct Square {
 
 typedef struct Board {
   square_t squares[8][8];
+  piece_t *white_king;
+  piece_t *black_king;
   piece_t *enpassantable_pawn;
 } board_t;
 
