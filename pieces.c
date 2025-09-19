@@ -95,7 +95,7 @@ bool queen_can_move(board_t *board, square_t *start, square_t *end) {
 }
 
 bool king_can_move(square_t *start, square_t *end) {
-  return abs(end->rank - start->rank) == 1 || abs(end->file - start->file) == 1;
+  return abs(end->rank - start->rank) <= 1 && abs(end->file - start->file) <= 1;
 }
 
 bool can_move(board_t *board, piece_t *piece, square_t *square) {
@@ -103,18 +103,27 @@ bool can_move(board_t *board, piece_t *piece, square_t *square) {
     return false;
   }
 
+  if (square->piece != NULL && piece->color == square->piece->color) {
+    return false;
+  }
+
   switch (piece->type) {
   case PAWN:
     return pawn_can_move(board, piece->square, square,
                          piece->color == WHITE ? 1 : -1, piece->has_moved);
+    break;
   case KNIGHT:
     return knight_can_move(piece->square, square);
+    break;
   case BISHOP:
     return bishop_can_move(board, piece->square, square);
+    break;
   case ROOK:
     return rook_can_move(board, piece->square, square);
+    break;
   case QUEEN:
     return queen_can_move(board, piece->square, square);
+    break;
   case KING:
     return king_can_move(piece->square, square);
   }
@@ -140,6 +149,29 @@ bool square_attacked(board_t *board, square_t *square, piece_color_t color) {
   }
 
   return false;
+}
+
+bool is_legal_move(board_t *board, piece_t *piece, square_t *square) {
+  if (!can_move(board, piece, square)) {
+    return false;
+  }
+
+  piece->square->piece = NULL;
+  piece_t *prev_piece = square->piece;
+  square->piece = piece;
+  square_t *prev_square = piece->square;
+  piece->square = square;
+
+  bool in_check = (piece->color == WHITE &&
+                   square_attacked(board, board->white_king->square, BLACK)) ||
+                  (piece->color == BLACK &&
+                   square_attacked(board, board->black_king->square, WHITE));
+
+  piece->square = prev_square;
+  square->piece = prev_piece;
+  piece->square->piece = piece;
+
+  return !in_check;
 }
 
 void move_to(piece_t *piece, square_t *square) {
@@ -204,7 +236,7 @@ bool move_piece(board_t *board, piece_t *piece, square_t *square,
     return false;
   }
 
-  if (!can_move(board, piece, square)) {
+  if (!is_legal_move(board, piece, square)) {
     return false;
   }
 
@@ -227,38 +259,13 @@ bool move_piece(board_t *board, piece_t *piece, square_t *square,
     board->enpassantable_pawn = NULL;
   }
 
-  piece->square->piece = NULL;
-  bool prev_has_moved = piece->has_moved;
-  piece->has_moved = true;
-  piece_t *prev_piece = square->piece;
-  square->piece = piece;
-  square_t *prev_square = piece->square;
-  piece->square = square;
-
-  bool in_check = (piece->color == WHITE &&
-                   square_attacked(board, board->white_king->square, BLACK)) ||
-                  (piece->color == BLACK &&
-                   square_attacked(board, board->black_king->square, WHITE));
-
-  piece->square = prev_square;
-  square->piece = prev_piece;
-  piece->has_moved = prev_has_moved;
-  piece->square->piece = piece;
-
-  if (in_check) {
-    return false;
-  }
-
-  if (square->piece != NULL) {
-    if (square->piece->color == piece->color) {
-      return false;
-    }
-    free(square->piece);
-  }
-
   if (piece->type == PAWN && ((piece->color == WHITE && square->rank == 7) ||
                               (piece->color == BLACK && square->rank == 0))) {
     piece->type = promotion_type;
+  }
+
+  if (square->piece != NULL) {
+    free(square->piece);
   }
 
   move_to(piece, square);
