@@ -5,7 +5,7 @@ A simple terminal-based chess program written in C. Play a full game of chess en
 ## Features
 - Move input uses standard algebraic notation (eg. `e4`, `Nbd2`, `O-O`, `fxg8=N+`)
 - Validates legal moves
-- Detects check, checkmate, stalemate, threefold repetition, and the 50-move rule
+- Detects checks, checkmate, stalemate, threefold repetition, the 50-move rule, and draws by insufficient material
 - Supports resignation and draw offers
 
 ## Getting Started

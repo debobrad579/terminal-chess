@@ -151,7 +151,7 @@ bool bishop_has_legal_move(board_t *board, piece_t *bishop) {
         return true;
       }
 
-      if (square->piece != NULL) {
+      if (!square->piece != NULL) {
         break;
       }
     }
@@ -258,4 +258,41 @@ bool has_legal_move(board_t *board, piece_color_t color) {
   }
 
   return false;
+}
+
+bool insufficient_material(board_t *board) {
+  bool hasKnight[2] = {false, false};
+  bool hasBishop[2] = {false, false};
+
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      piece_t *piece = board->squares[i][j].piece;
+      if (piece == NULL) {
+        continue;
+      }
+
+      switch (piece->type) {
+      case PAWN:
+      case ROOK:
+      case QUEEN:
+        return false;
+      case KNIGHT:
+        if (hasBishop[piece->color]) {
+          return false;
+        }
+        hasKnight[piece->color] = true;
+        break;
+      case BISHOP:
+        if (hasKnight[piece->color] || hasBishop[piece->color]) {
+          return false;
+        }
+        hasBishop[piece->color] = true;
+        break;
+      case KING:
+        break;
+      }
+    }
+  }
+
+  return true;
 }

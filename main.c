@@ -147,6 +147,11 @@ game_loop:
       break;
     }
 
+    if (insufficient_material(board)) {
+      game_over(INSUFFICIENT_MATERIAL, opposite_color);
+      break;
+    }
+
     if (drawn_by_threefold) {
       game_over(THREEFOLD, opposite_color);
       break;
