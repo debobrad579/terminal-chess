@@ -82,10 +82,24 @@ bool move_piece(board_t *board, piece_t *piece, square_t *square,
     return true;
   }
 
-  if (piece->type == PAWN && !piece->has_moved && piece->color == WHITE
-          ? square->rank == 3
-          : square->rank == 4) {
-    board->enpassantable_pawn = piece;
+  if (piece->type == PAWN && !piece->has_moved &&
+      (piece->color == WHITE ? square->rank == 3 : square->rank == 4)) {
+    piece_t *left_piece =
+        piece->square->file != 0
+            ? board->squares[square->rank][square->file - 1].piece
+            : NULL;
+    piece_t *right_piece =
+        piece->square->file != 7
+            ? board->squares[square->rank][square->file + 1].piece
+            : NULL;
+    if ((left_piece != NULL && left_piece->type == PAWN &&
+         left_piece->color != piece->color) ||
+        (right_piece != NULL && right_piece->type == PAWN &&
+         right_piece->color != piece->color)) {
+      board->enpassantable_pawn = piece;
+    } else {
+      board->enpassantable_pawn = NULL;
+    }
   } else {
     board->enpassantable_pawn = NULL;
   }

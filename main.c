@@ -8,6 +8,52 @@
 #include <stdlib.h>
 #include <string.h>
 
+fen_array_t *init_fen_array() {
+  fen_array_t *arr = malloc(sizeof(fen_array_t));
+
+  if (!arr) {
+    return NULL;
+  }
+
+  arr->fens = NULL;
+  arr->length = 0;
+  arr->capacity = 0;
+  return arr;
+}
+
+void append_fen(fen_array_t *arr, char *str) {
+  if (arr->length == arr->capacity) {
+    size_t new_capacity = arr->capacity == 0 ? 4 : arr->capacity * 2;
+    char **new_fens = realloc(arr->fens, new_capacity * sizeof(char *));
+
+    if (!new_fens) {
+      return;
+    }
+
+    arr->fens = new_fens;
+    arr->capacity = new_capacity;
+  }
+
+  arr->fens[arr->length] = malloc(strlen(str) + 1);
+
+  if (!arr) {
+    return;
+  }
+
+  strcpy(arr->fens[arr->length], str);
+  arr->length++;
+}
+
+void free_fen_array(fen_array_t *arr) {
+  for (size_t i = 0; i < arr->length; i++) {
+    free(arr->fens[i]);
+  }
+
+  free(arr->fens);
+  arr->fens = NULL;
+  arr->length = arr->capacity = 0;
+}
+
 bool is_valid_san(const char *move) {
   const char *pattern =
       "^(O-O(-O)?|([KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?[+#]?))$";
@@ -39,6 +85,15 @@ void game_over(gameover_t type, piece_color_t color) {
   case DRAW_OFFER:
     printf("DRAW AGREED! THE GAME IS DRAWN!");
     break;
+  case THREEFOLD:
+    printf("THREEFOLD REPETITION! THE GAME IS DRAWN!");
+    break;
+  case FIFTY_MOVE_RULE:
+    printf("FIFTY MOVE RULE! THE GAME IS DRAWN!");
+    break;
+  case INSUFFICIENT_MATERIAL:
+    printf("INSUFFICIENT MATERIAL! THE GAME IS DRAWN!");
+    break;
   }
 
   printf("\n");
@@ -59,7 +114,9 @@ int main(void) {
   board_t *board;
   draw_offer_t draw_offer;
   piece_color_t color_to_move;
+  fen_array_t *fen_array;
   bool illegal_move_made;
+  bool drawn_by_threefold;
 
 game_loop:
   board = create_board();
@@ -70,7 +127,9 @@ game_loop:
 
   draw_offer = NO_OFFER;
   color_to_move = WHITE;
+  fen_array = init_fen_array();
   illegal_move_made = false;
+  drawn_by_threefold = false;
 
   while (true) {
     print_board(board);
@@ -85,6 +144,11 @@ game_loop:
 
     if (!has_legal_move(board, color_to_move)) {
       game_over(in_check ? CHECKMATE : STALEMATE, opposite_color);
+      break;
+    }
+
+    if (drawn_by_threefold) {
+      game_over(THREEFOLD, opposite_color);
       break;
     }
 
@@ -122,16 +186,36 @@ game_loop:
       continue;
     }
 
-    if (move_from_san(board, move, color_to_move)) {
-      color_to_move = opposite_color;
-      if (draw_offer != NO_OFFER && !have_active_draw_offer) {
-        draw_offer = NO_OFFER;
-      }
-    } else {
+    if (!move_from_san(board, move, color_to_move)) {
       illegal_move_made = true;
+      continue;
     }
+
+    color_to_move = opposite_color;
+    if (draw_offer != NO_OFFER && !have_active_draw_offer) {
+      draw_offer = NO_OFFER;
+    }
+
+    char *fen = board_to_fen(board, color_to_move);
+
+    bool seen = false;
+
+    for (size_t i = 0; i < fen_array->length; i++) {
+      if (strcmp(fen_array->fens[i], fen) == 0) {
+        if (seen) {
+          drawn_by_threefold = true;
+          break;
+        }
+
+        seen = true;
+      }
+    }
+
+    append_fen(fen_array, fen);
+    printf("%s", fen);
   }
 
   free_board(board);
+  free_fen_array(fen_array);
   goto game_loop;
 }

@@ -37,6 +37,6 @@ gcc -Wall -Wextra -std=c11 -g main.c board.c move_piece.c can_move.c legal_moves
 ```
 
 ## TODO
-- Threefold repitition
 - 50 move rule
 - Clocks
+- Playing against engines

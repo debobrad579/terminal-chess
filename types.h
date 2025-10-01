@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stddef.h>
 
 #pragma once
 
@@ -14,7 +15,10 @@ typedef enum GameOver {
   CHECKMATE,
   RESIGNATION,
   STALEMATE,
-  DRAW_OFFER
+  DRAW_OFFER,
+  THREEFOLD,
+  FIFTY_MOVE_RULE,
+  INSUFFICIENT_MATERIAL,
 } gameover_t;
 
 typedef struct Square square_t;
@@ -38,3 +42,9 @@ typedef struct Board {
   piece_t *black_king;
   piece_t *enpassantable_pawn;
 } board_t;
+
+typedef struct FenArray {
+  char **fens;
+  size_t length;
+  size_t capacity;
+} fen_array_t;
