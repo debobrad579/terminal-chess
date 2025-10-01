@@ -157,7 +157,7 @@ game_loop:
       break;
     }
 
-    if (board->fifty_move_rule_counter >= 50) {
+    if (board->fifty_move_rule_counter >= 100) {
       game_over(FIFTY_MOVE_RULE, opposite_color);
       break;
     }
