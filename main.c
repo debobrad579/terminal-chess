@@ -152,6 +152,11 @@ game_loop:
       break;
     }
 
+    if (board->fifty_move_rule_counter >= 50) {
+      game_over(FIFTY_MOVE_RULE, opposite_color);
+      break;
+    }
+
     bool have_active_draw_offer =
         (color_to_move == WHITE && draw_offer == WHITE_OFFERED) ||
         (color_to_move == BLACK && draw_offer == BLACK_OFFERED);

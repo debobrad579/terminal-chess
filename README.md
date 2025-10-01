@@ -5,7 +5,7 @@ A simple terminal-based chess program written in C. Play a full game of chess en
 ## Features
 - Move input uses standard algebraic notation (eg. `e4`, `Nbd2`, `O-O`, `fxg8=N+`)
 - Validates legal moves
-- Detects check, checkmate, and stalemate
+- Detects check, checkmate, stalemate, threefold repetition, and the 50-move rule
 - Supports resignation and draw offers
 
 ## Getting Started
@@ -37,6 +37,5 @@ gcc -Wall -Wextra -std=c11 -g main.c board.c move_piece.c can_move.c legal_moves
 ```
 
 ## TODO
-- 50 move rule
 - Clocks
 - Playing against engines

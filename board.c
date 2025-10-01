@@ -26,6 +26,8 @@ board_t *create_board() {
     return NULL;
   }
 
+  board->fifty_move_rule_counter = 0;
+
   for (int i = 0; i < 8; ++i) {
     for (int j = 0; j < 8; ++j) {
       board->squares[i][j].rank = i;

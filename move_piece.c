@@ -113,6 +113,12 @@ bool move_piece(board_t *board, piece_t *piece, square_t *square,
     free(square->piece);
   }
 
+  if (piece->type == PAWN || square->piece != NULL) {
+    board->fifty_move_rule_counter = 0;
+  } else {
+    board->fifty_move_rule_counter++;
+  }
+
   move_to(piece, square);
 
   return true;

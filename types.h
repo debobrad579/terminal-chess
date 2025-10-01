@@ -41,6 +41,7 @@ typedef struct Board {
   piece_t *white_king;
   piece_t *black_king;
   piece_t *enpassantable_pawn;
+  int fifty_move_rule_counter;
 } board_t;
 
 typedef struct FenArray {
