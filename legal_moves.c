@@ -151,7 +151,7 @@ bool bishop_has_legal_move(board_t *board, piece_t *bishop) {
         return true;
       }
 
-      if (!square->piece != NULL) {
+      if (square->piece != NULL) {
         break;
       }
     }
