@@ -1,10 +1,6 @@
 # Terminal Chess in C
 
-A simple terminal-based chess program written in C.
-
-## Motivation
-
-Play through a full game of chess without needing to leave the terminal.
+A simple terminal-based chess program written in C. Play a full game of chess entirely in the terminal.
 
 ## Features
 
