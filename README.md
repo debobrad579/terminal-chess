@@ -1,14 +1,19 @@
 # Terminal Chess in C
 
-A simple terminal-based chess program written in C. Play a full game of chess entirely in the terminal.
+A simple terminal-based chess program written in C.
+
+## Motivation
+
+Play through a full game of chess without needing to leave the terminal.
 
 ## Features
+
 - Move input uses standard algebraic notation (eg. `e4`, `Nbd2`, `O-O`, `fxg8=N+`)
 - Validates legal moves
 - Detects checks, checkmate, stalemate, threefold repetition, the 50-move rule, and draws by insufficient material
 - Supports resignation and draw offers
 
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 You’ll need:
@@ -17,7 +22,7 @@ You’ll need:
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/debobrad579/terminal-chess.git
+git clone git@github.com:debobrad579/terminal-chess.git
 cd terminal-chess
 ```
 
@@ -36,6 +41,20 @@ gcc -Wall -Wextra -std=c11 -g main.c board.c move_piece.c can_move.c legal_moves
 ./main
 ```
 
+## Usage
+
+Available Commands:
+
+- `r` - Resign
+- `d` - Offer/accept draw
+- Anything else will be interpretting as SAN
+
 ## TODO
+
 - Clocks
 - Playing against engines
+- Saving/loading game PGNs
+
+## Contributing
+
+If you'd like to contribute, please fork this repository and open a pull request to the `main` branch.
