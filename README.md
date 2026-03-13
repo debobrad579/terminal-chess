@@ -18,7 +18,7 @@ You’ll need:
 
 ### Clone the Repository
 ```bash
-git clone git@github.com:debobrad579/terminal-chess.git
+git clone https://github.com/debobrad579/terminal-chess.git
 cd terminal-chess
 ```
 
